@@ -19,5 +19,7 @@ int main()
 		std::cout << "Row: " << i << " Col: " << assignment.at(i) << std::endl;
 	}
 
+	Hungarian.DoAlgo(Cost);
+
 	return 0;
 }

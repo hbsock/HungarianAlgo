@@ -2,6 +2,7 @@
 #include "HungarianAlgo.h"
 #include <limits>
 #include <stdlib.h> //required for malloc and calloc
+#include <algorithm>
 using namespace std;
 
 AssignmentProblemSolver::AssignmentProblemSolver()
@@ -52,6 +53,7 @@ float AssignmentProblemSolver::Solve(vector< vector<float> >& DistMatrix, vector
 	delete[] distIn;
 	return cost;
 }
+
 // --------------------------------------------------------------------------
 // Computes the optimal assignment (minimum overall costs) using Munkres algorithm.
 // --------------------------------------------------------------------------
@@ -567,3 +569,25 @@ void AssignmentProblemSolver::assignmentsuboptimal2(int* assignment, float* cost
 	free(distMatrix);
 }
 // --------------------------------------------------------------------------
+
+std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vector<float>>& CostMatrix)
+{
+	std::vector<std::vector<float>> C = CostMatrix;
+	const size_t N = C.size();
+	const size_t M = C.front().size();
+
+	//step 1
+	for (size_t row = 0; row < N; ++row)
+	{
+		auto &RowVector = C.at(row);
+		float row_min_val = *std::min_element(RowVector.begin(), RowVector.end());
+		for (auto &row_elem : RowVector)
+		{
+			row_elem -= row_min_val;
+		}
+	}
+
+
+
+	return std::vector<size_t>();
+}

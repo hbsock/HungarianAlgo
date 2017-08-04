@@ -20,10 +20,13 @@ private:
 	void step5(int* assignment, float* distMatrix, bool* starMatrix, bool* newStarMatrix, bool* primeMatrix, bool* coveredColumns, bool* coveredRows, int nOfRows, int nOfColumns, int minDim);
 
 	void assignmentsuboptimal2(int* assignment, float* cost, float* distMatrixIn, int nOfRows, int nOfColumns);
+
 public:
 	enum TMethod { optimal, many_forbidden_assignments, without_forbidden_assignments };
 	AssignmentProblemSolver();
 	float Solve(std::vector< std::vector<float> >& DistMatrix, std::vector<int>& Assignment, TMethod Method = optimal);
+
+	std::vector<size_t> DoAlgo(const std::vector< std::vector<float> >& CostMatrix);
 };
 
 #endif // !HUNGARIANALGORITHM_H
