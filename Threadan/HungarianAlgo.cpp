@@ -587,7 +587,23 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 		}
 	}
 
+	//step 2
+	for (size_t col = 0; col < M; ++col)
+	{
+		float min_col_val = std::numeric_limits<float>::max();
+		for (size_t row = 0; row < N; row++)
+		{
+			if (C[row][col] < min_col_val)
+			{
+				min_col_val = C[row][col];
+			}
+		}
 
+		for (size_t row = 0; row < N; row++)
+		{
+			C[row][col] -= min_col_val;
+		}
+	}
 
 	return std::vector<size_t>();
 }
