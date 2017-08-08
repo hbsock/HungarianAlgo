@@ -12,14 +12,12 @@ int main()
 	std::vector<int> assignment;
 
 	AssignmentProblemSolver Hungarian;
-	Hungarian.Solve(Cost, assignment, AssignmentProblemSolver::optimal);
 
-	for (size_t i = 0; i < assignment.size(); ++i)
+	auto result = Hungarian.DoAlgo(Cost);
+	for (size_t i = 0; i < result.size(); ++i)
 	{
-		std::cout << "Row: " << i << " Col: " << assignment.at(i) << std::endl;
+		std::cout << "Row: " << i << " Col: " << result.at(i) << std::endl;
 	}
-
-	Hungarian.DoAlgo(Cost);
 
 	return 0;
 }
