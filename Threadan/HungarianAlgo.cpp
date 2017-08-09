@@ -8,32 +8,6 @@ constexpr size_t INVALID_ASSIGNMENT = std::numeric_limits<size_t>::max();
 namespace
 {
 
-	bool optimization(int row, std::vector<size_t> &rows, std::vector<bool> &occupiedCols, const std::vector<std::vector<float>> &values) {
-		if (row == rows.size()) // If all rows were assigned a cell
-			return true;
-
-		for (int col = 0; col < values.size(); col++) { // Try all columns
-			if (values[row][col] == 0 && occupiedCols[col] == false) { // If the current cell at column `col` has a value of zero, and the column is not reserved by a previous row
-				rows[row] = col; // Assign the current row the current column cell
-				occupiedCols[col] = true; // Mark the column as reserved
-				if (optimization(row + 1, rows, occupiedCols, values)) // If the next rows were assigned successfully a cell from a unique column, return true
-					return true;
-				occupiedCols[col] = false; // If the next rows were not able to get a cell, go back and try for the previous rows another cell from another column
-			}
-		}
-		return false; // If no cell were assigned for the current row, return false to go back one row to try to assign to it another cell from another column
-	}
-
-	std::vector<size_t> optimization(const std::vector<std::vector<float>> &values) {
-		std::vector<size_t> rows(values.size(), INVALID_ASSIGNMENT);
-		std::vector<bool> occupiedCols(values.size(), false);
-		if (optimization(0, rows, occupiedCols, values))
-			return rows;
-		else
-			throw std::exception("No valid assignment.");
-	} //End optimization
-
-
 	  // A DFS based recursive function that returns true if a
 	  // matching for vertex u is possible
 	bool bpm(const std::vector<std::vector<bool>> &bpGraph, 
@@ -66,8 +40,21 @@ namespace
 	}
 
 	// Returns maximum number of matching from M to N
-	std::vector<size_t> maxBPM(const std::vector<std::vector<bool>> &bpGraph)
+	std::vector<size_t> maxBPM(const std::vector<std::vector<float>> &tempCostMatrix)
 	{
+		const size_t maxRow = tempCostMatrix.size();
+		const size_t maxCol = tempCostMatrix.front().size();
+
+		std::vector<std::vector<bool>> bpGraph(maxRow);
+		for (size_t row = 0; row < maxRow; ++row)
+		{
+			for (size_t col = 0; col < maxCol; ++col)
+			{
+				bpGraph.at(row).resize(maxCol);
+				bpGraph[row][col] = (tempCostMatrix[row][col] == 0);
+			}
+		}
+
 		// An array to keep track of the applicants assigned to
 		// jobs. The value of matchR[i] is the applicant number
 		// assigned to job i, the value -1 indicates nobody is
@@ -169,40 +156,27 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 		//step 3
 		std::vector<bool> RowMarked(maxRow, false);
 		std::vector<bool> ColMarked(maxCol, false);
-		//auto coveredResults = optimization(tempCostMatrix);
-
-		std::vector<std::vector<bool>> BipartiteGraph(maxRow); 
-		for (size_t row = 0; row < maxRow; ++row)
-		{
-			for (size_t col = 0; col < maxCol; ++col)
-			{
-				BipartiteGraph.at(row).resize(maxCol);
-				BipartiteGraph[row][col] = (tempCostMatrix[row][col] == 0);
-			}
-		}
 		
-		auto coveredResults = maxBPM(BipartiteGraph);
-
-		for (size_t row = 0; row < coveredResults.size(); ++row)
-		{
-			if (coveredResults[row] == INVALID_ASSIGNMENT)
-			{
-				RowMarked[row] = true;
-				markCostMatrix(row, maxRow, maxCol, tempCostMatrix, ColMarked, RowMarked, coveredResults);
-			}
-		}
+		auto coveredResults = maxBPM(tempCostMatrix);
 		
-		size_t lineCount = std::count_if(coveredResults.begin(), coveredResults.end(), [](size_t val) { 
-			return val != INVALID_ASSIGNMENT; 
-		});
+		size_t lineCount = std::count_if(coveredResults.begin(), coveredResults.end(), [](size_t val) { return val != INVALID_ASSIGNMENT; });
 
 		if (lineCount == maxCol )
 		{
-			break;
+			return coveredResults;
 		}
 		else
 		{
 			//step 4
+			for (size_t row = 0; row < coveredResults.size(); ++row)
+			{
+				if (coveredResults[row] == INVALID_ASSIGNMENT)
+				{
+					RowMarked[row] = true;
+					markCostMatrix(row, maxRow, maxCol, tempCostMatrix, ColMarked, RowMarked, coveredResults);
+				}
+			}
+
 			float minVal = std::numeric_limits<float>::max();
 			for (size_t row = 0; row < maxRow; ++row)
 			{
@@ -236,5 +210,5 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 		}
 	}
 
-	return optimization(tempCostMatrix);
+	return maxBPM(tempCostMatrix);
 }
