@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cassert>
 
+constexpr size_t INVALID_ASSIGNMENT = std::numeric_limits<size_t>::max();
+
 namespace
 {
 
@@ -23,10 +25,12 @@ namespace
 	}
 
 	std::vector<size_t> optimization(const std::vector<std::vector<float>> &values) {
-		std::vector<size_t> rows(values.size(), std::numeric_limits<size_t>::max());
+		std::vector<size_t> rows(values.size(), INVALID_ASSIGNMENT);
 		std::vector<bool> occupiedCols(values.size(), false);
-		optimization(0, rows, occupiedCols, values);
-		return rows;
+		if (optimization(0, rows, occupiedCols, values))
+			return rows;
+		else
+			throw std::exception("No valid assignment.");
 	} //End optimization
 
 }
@@ -73,12 +77,13 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 		//step 3
 		std::vector<bool> RowMarked(maxRow, false);
 		std::vector<bool> ColMarked(maxCol, false);
-		auto markedResults = optimization(tempCostMatrix);
+		//auto coveredResults = optimization(tempCostMatrix);
+		auto coveredResults = getMaxFlow(tempCostMatrix);
 
-		for (size_t row = 0; row < markedResults.size(); ++row)
+		for (size_t row = 0; row < coveredResults.size(); ++row)
 		{
 			std::vector<bool> ColMarkedInThisRow(maxCol, false);
-			if (markedResults[row] == std::numeric_limits<size_t>::max())
+			if (coveredResults[row] == INVALID_ASSIGNMENT)
 			{
 				RowMarked[row] = true;
 				
@@ -107,8 +112,8 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 			}
 		}
 		
-		size_t lineCount = std::count_if(markedResults.begin(), markedResults.end(), [](size_t val) { 
-			return val != std::numeric_limits<size_t>::max(); 
+		size_t lineCount = std::count_if(coveredResults.begin(), coveredResults.end(), [](size_t val) { 
+			return val != INVALID_ASSIGNMENT; 
 		});
 
 		if (lineCount == maxCol )
@@ -123,7 +128,7 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 			{
 				for (size_t col = 0; col < maxCol; ++col)
 				{
-					if (!RowMarked[row] || ColMarked[col])
+					if (!(!RowMarked[row] || ColMarked[col]))
 					{
 						if (minVal > tempCostMatrix[row][col])
 						{
@@ -137,12 +142,12 @@ std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vecto
 			{
 				for (size_t col = 0; col < maxCol; ++col)
 				{
-					if (!RowMarked[row])
+					if (RowMarked[row])
 					{
 						tempCostMatrix[row][col] -= minVal;
 					}
 
-					if (!ColMarked[col])
+					if (ColMarked[col])
 					{
 						tempCostMatrix[row][col] += minVal;
 					}
