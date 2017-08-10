@@ -5,9 +5,9 @@
 
 constexpr size_t INVALID_ASSIGNMENT = std::numeric_limits<size_t>::max();
 
-namespace
+class AssignmentProblemSolver::impl
 {
-
+public:
 	  // A DFS based recursive function that returns true if a
 	  // matching for vertex u is possible
 	bool bpm(const std::vector<std::vector<bool>> &bpGraph, 
@@ -112,103 +112,122 @@ namespace
 			}
 		}
 	}
-}
 
-std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vector<float>>& CostMatrix)
-{
-	std::vector<std::vector<float>> tempCostMatrix = CostMatrix;
-	const size_t maxRow = tempCostMatrix.size();
-	const size_t maxCol = tempCostMatrix.front().size();
-	assert(maxRow == maxCol);
 
-	//step 1
-	for (size_t row = 0; row < maxRow; ++row)
+	std::vector<size_t> DoAlgo(const std::vector<std::vector<float>>& CostMatrix)
 	{
-		auto &RowVector = tempCostMatrix.at(row);
-		float row_min_val = *std::min_element(RowVector.begin(), RowVector.end());
-		for (auto &row_elem : RowVector)
-		{
-			row_elem -= row_min_val;
-		}
-	}
+		std::vector<std::vector<float>> tempCostMatrix = CostMatrix;
+		const size_t maxRow = tempCostMatrix.size();
+		const size_t maxCol = tempCostMatrix.front().size();
+		assert(maxRow == maxCol);
 
-	//step 2
-	for (size_t col = 0; col < maxCol; ++col)
-	{
-		float min_col_val = std::numeric_limits<float>::max();
-		for (size_t row = 0; row < maxRow; row++)
+		//step 1
+		for (size_t row = 0; row < maxRow; ++row)
 		{
-			if (tempCostMatrix[row][col] < min_col_val)
+			auto &RowVector = tempCostMatrix.at(row);
+			float row_min_val = *std::min_element(RowVector.begin(), RowVector.end());
+			for (auto &row_elem : RowVector)
 			{
-				min_col_val = tempCostMatrix[row][col];
+				row_elem -= row_min_val;
 			}
 		}
 
-		for (size_t row = 0; row < maxRow; row++)
+		//step 2
+		for (size_t col = 0; col < maxCol; ++col)
 		{
-			tempCostMatrix[row][col] -= min_col_val;
-		}
-	}
-
-
-	while (true)
-	{
-		//step 3
-		std::vector<bool> RowMarked(maxRow, false);
-		std::vector<bool> ColMarked(maxCol, false);
-		
-		auto coveredResults = maxBPM(tempCostMatrix);
-		
-		size_t lineCount = std::count_if(coveredResults.begin(), coveredResults.end(), [](size_t val) { return val != INVALID_ASSIGNMENT; });
-
-		if (lineCount == maxCol )
-		{
-			return coveredResults;
-		}
-		else
-		{
-			//step 4
-			for (size_t row = 0; row < coveredResults.size(); ++row)
+			float min_col_val = std::numeric_limits<float>::max();
+			for (size_t row = 0; row < maxRow; row++)
 			{
-				if (coveredResults[row] == INVALID_ASSIGNMENT)
+				if (tempCostMatrix[row][col] < min_col_val)
 				{
-					RowMarked[row] = true;
-					markCostMatrix(row, maxRow, maxCol, tempCostMatrix, ColMarked, RowMarked, coveredResults);
+					min_col_val = tempCostMatrix[row][col];
 				}
 			}
 
-			float minVal = std::numeric_limits<float>::max();
-			for (size_t row = 0; row < maxRow; ++row)
+			for (size_t row = 0; row < maxRow; row++)
 			{
-				for (size_t col = 0; col < maxCol; ++col)
+				tempCostMatrix[row][col] -= min_col_val;
+			}
+		}
+
+
+		while (true)
+		{
+			//step 3
+			std::vector<bool> RowMarked(maxRow, false);
+			std::vector<bool> ColMarked(maxCol, false);
+
+			auto coveredResults = maxBPM(tempCostMatrix);
+
+			size_t lineCount = std::count_if(coveredResults.begin(), coveredResults.end(), [](size_t val) { return val != INVALID_ASSIGNMENT; });
+
+			if (lineCount == maxCol)
+			{
+				return coveredResults;
+			}
+			else
+			{
+				//step 4
+				for (size_t row = 0; row < coveredResults.size(); ++row)
 				{
-					if (!(!RowMarked[row] || ColMarked[col]))
+					if (coveredResults[row] == INVALID_ASSIGNMENT)
 					{
-						if (minVal > tempCostMatrix[row][col])
+						RowMarked[row] = true;
+						markCostMatrix(row, maxRow, maxCol, tempCostMatrix, ColMarked, RowMarked, coveredResults);
+					}
+				}
+
+				float minVal = std::numeric_limits<float>::max();
+				for (size_t row = 0; row < maxRow; ++row)
+				{
+					for (size_t col = 0; col < maxCol; ++col)
+					{
+						if (!(!RowMarked[row] || ColMarked[col]))
 						{
-							minVal = tempCostMatrix[row][col];
+							if (minVal > tempCostMatrix[row][col])
+							{
+								minVal = tempCostMatrix[row][col];
+							}
+						}
+					}
+				}
+
+				for (size_t row = 0; row < maxRow; ++row)
+				{
+					for (size_t col = 0; col < maxCol; ++col)
+					{
+						if (RowMarked[row])
+						{
+							tempCostMatrix[row][col] -= minVal;
+						}
+
+						if (ColMarked[col])
+						{
+							tempCostMatrix[row][col] += minVal;
 						}
 					}
 				}
 			}
-
-			for (size_t row = 0; row < maxRow; ++row)
-			{
-				for (size_t col = 0; col < maxCol; ++col)
-				{
-					if (RowMarked[row])
-					{
-						tempCostMatrix[row][col] -= minVal;
-					}
-
-					if (ColMarked[col])
-					{
-						tempCostMatrix[row][col] += minVal;
-					}
-				}
-			}
 		}
-	}
 
-	return maxBPM(tempCostMatrix);
+		// never reach here
+		assert(false);
+	}
+};
+
+///
+///
+/// Public below
+///
+///
+AssignmentProblemSolver::AssignmentProblemSolver()
+	: pimpl(std::make_unique<impl>())
+{
+}
+
+AssignmentProblemSolver::~AssignmentProblemSolver() = default;
+
+std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vector<float>>& CostMatrix)
+{
+	return pimpl->DoAlgo(CostMatrix);
 }
