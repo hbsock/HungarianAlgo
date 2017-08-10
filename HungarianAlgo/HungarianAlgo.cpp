@@ -114,7 +114,7 @@ public:
 	}
 
 
-	std::vector<size_t> DoAlgo(const std::vector<std::vector<float>>& CostMatrix)
+	std::vector<size_t> DoHungarianAlgo(const std::vector<std::vector<float>>& CostMatrix)
 	{
 		std::vector<std::vector<float>> tempCostMatrix = CostMatrix;
 		const size_t maxRow = tempCostMatrix.size();
@@ -227,7 +227,7 @@ AssignmentProblemSolver::AssignmentProblemSolver()
 
 AssignmentProblemSolver::~AssignmentProblemSolver() = default;
 
-std::vector<size_t> AssignmentProblemSolver::DoAlgo(const std::vector<std::vector<float>>& CostMatrix)
+std::vector<size_t> AssignmentProblemSolver::DoHungarianAlgo(const std::vector<std::vector<float>>& CostMatrix)
 {
-	return pimpl->DoAlgo(CostMatrix);
+	return pimpl->DoHungarianAlgo(CostMatrix);
 }

@@ -10,7 +10,7 @@ public:
 	AssignmentProblemSolver();
 	~AssignmentProblemSolver();
 
-	std::vector<size_t> DoAlgo(const std::vector< std::vector<float> >& CostMatrix);
+	std::vector<size_t> DoHungarianAlgo(const std::vector< std::vector<float> >& CostMatrix);
 private:
 	class impl;
 	std::unique_ptr<impl> pimpl;

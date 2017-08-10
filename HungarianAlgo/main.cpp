@@ -19,7 +19,7 @@ int main()
 
 	AssignmentProblemSolver Hungarian;
 
-	auto result = Hungarian.DoAlgo(Cost);
+	auto result = Hungarian.DoHungarianAlgo(Cost);
 	//auto result = Hungarian.DoAlgo(SimpleCost);
 	for (size_t i = 0; i < result.size(); ++i)
 	{
